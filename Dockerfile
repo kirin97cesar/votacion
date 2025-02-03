@@ -32,6 +32,10 @@ WORKDIR /var/www/html
 # Copiar los archivos del proyecto al contenedor
 COPY . /var/www/html
 
+# Cambiar permisos de las carpetas storage y bootstrap/cache para evitar problemas de permisos
+RUN chmod -R 775 storage bootstrap/cache && \
+    chown -R www-data:www-data storage bootstrap/cache
+
 # Instalar las dependencias de Composer
 RUN composer install --no-dev --optimize-autoloader
 
@@ -45,5 +49,5 @@ EXPOSE 80
 # Usar usuario no root
 USER $user
 
-# Ejecutar migraciones de Laravel automáticamente al iniciar el contenedor
+# Ejecutar migraciones y seeders de Laravel automáticamente al iniciar el contenedor
 CMD php artisan migrate --force --seed && php-fpm
