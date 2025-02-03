@@ -13,8 +13,9 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    nginx && \
-    docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd && \
+    nginx \
+    libzip-dev && \
+    docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Obtener la última versión de Composer
@@ -34,6 +35,7 @@ COPY . /var/www/html
 # Instalar las dependencias de Composer
 RUN composer install --no-dev --optimize-autoloader
 
+# Copiar el archivo de entorno .env
 COPY .env .env
 RUN chmod 644 .env
 
