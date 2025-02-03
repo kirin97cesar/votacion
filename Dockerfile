@@ -46,4 +46,4 @@ EXPOSE 80
 USER $user
 
 # Ejecutar migraciones de Laravel automáticamente al iniciar el contenedor
-CMD php artisan migrate --force && php-fpm
+CMD php artisan migrate --force --seed && php-fpm
