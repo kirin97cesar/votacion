@@ -28,7 +28,10 @@ RUN useradd -G www-data,root -u $uid -d /home/$user $user && \
 # Establecer directorio de trabajo
 WORKDIR /var/www/html
 
-# Copiar el archivo de configuración
+# Copiar los archivos del proyecto al contenedor
+COPY . /var/www/html
+
+# Copiar el archivo de configuración de Nginx
 COPY .env .env
 RUN chmod 644 .env
 
@@ -38,5 +41,5 @@ EXPOSE 80
 # Usar usuario no root
 USER $user
 
-# Iniciar Nginx y PHP-FPM
+# Ejecutar migraciones de Laravel automáticamente al iniciar el contenedor
 CMD php artisan migrate --force && php-fpm
