@@ -31,9 +31,6 @@ WORKDIR /var/www
 COPY .env .env
 RUN chmod 644 .env
 
-# Configurar permisos de Laravel
-RUN chown -R www-data:www-data storage bootstrap/cache
-
 # Exponer el puerto del contenedor
 EXPOSE 9000
 
