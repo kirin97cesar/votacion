@@ -31,7 +31,9 @@ WORKDIR /var/www/html
 # Copiar los archivos del proyecto al contenedor
 COPY . /var/www/html
 
-# Copiar el archivo de configuración de Nginx
+# Instalar las dependencias de Composer
+RUN composer install --no-dev --optimize-autoloader
+
 COPY .env .env
 RUN chmod 644 .env
 
