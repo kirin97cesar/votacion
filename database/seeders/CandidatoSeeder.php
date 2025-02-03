@@ -14,17 +14,19 @@ class CandidatoSeeder extends Seeder
      */
     public function run(Candidato $candidato)
     {
-        $candidato::insert([[
-            'id' => 1,
-            'nombres' => 'EN BLANCO',
-            'dni' => 00000000,
-            'temporada_id' => 1
-        ],
-        [
-            'id' => 2,
-            'nombres' => 'NULO',
-            'dni' => 00000000,
-            'temporada_id' => 1
-        ]]);
+        $candidato::insert([
+            [
+                'id' => 1,
+                'nombres' => 'EN BLANCO',
+                'dni' => 00000000,
+                'temporada_id' => 1
+            ],
+            [
+                'id' => 2,
+                'nombres' => 'NULO',
+                'dni' => 00000000,
+                'temporada_id' => 1
+            ]
+        ]);
     }
 }

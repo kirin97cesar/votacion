@@ -15,11 +15,25 @@ class UserSeeder extends Seeder
      */
     public function run(User $user)
     {
-        $user::create([
-            'name' => 'Paulo',
-            'email' => 'paulo@ludik.pe',
-            'password' => Hash::make('@pau1997'),
-            'rol_id' => 1
+        $user::insert([
+            [
+                'name' => 'Paulo',
+                'email' => 'paulo@admin.pe',
+                'password' => Hash::make('@pau1997'),
+                'rol_id' => 1
+            ],
+            [
+                'name' => 'COOPAC SAN VIATOR',
+                'email' => 'administrador@coopacsanviator.org.pe',
+                'password' => Hash::make('coop@c2050sanV1ator'),
+                'rol_id' => 1
+            ],
+            [
+                'name' => 'Reporteria',
+                'email' => 'resultados@coopacsanviator.org.pe',
+                'password' => Hash::make('result@DosC00p@c'),
+                'rol_id' => 2
+            ]
         ]);
     }
 }

@@ -43,10 +43,11 @@ class VotacionController extends Controller
         }
     }
 
-    public function comprobarTiempo(Request $request)
+    public function comprobarTiempo()
     {
-        $temporadaActual = Temporada::where('fecha_inicio', '<=', $request->fechaActual)
-            ->where('fecha_fin', '>=', $request->fechaActual)
+        $hoy = date("Y-m-d H:i:s");
+        $temporadaActual = Temporada::where('fecha_inicio', '<=', $hoy)
+            ->where('fecha_fin', '>=', $hoy)
             ->orderBy('id', 'DESC')
             ->take(1)
             ->get();
@@ -57,8 +58,59 @@ class VotacionController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Si hay votación'], 200);
     }
 
+    protected function comprobarEstado()
+    {
+        $hoy = date("Y-m-d H:i:s");
+        $temporadaActual = Temporada::where('fecha_inicio', '<=', $hoy)
+            ->where('fecha_fin', '>=', $hoy)
+            ->orderBy('id', 'DESC')
+            ->take(1)
+            ->get();
+
+        if (count($temporadaActual) == 0) {
+            return false;
+        }
+        return true;
+    }
+
+    protected function getUserIpAddress() {
+
+        foreach ( [ 'HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR' ] as $key ) {
+    
+            // Comprobamos si existe la clave solicitada en el array de la variable $_SERVER 
+            if ( array_key_exists( $key, $_SERVER ) ) {
+    
+                // Eliminamos los espacios blancos del inicio y final para cada clave que existe en la variable $_SERVER 
+                foreach ( array_map( 'trim', explode( ',', $_SERVER[ $key ] ) ) as $ip ) {
+    
+                    // Filtramos* la variable y retorna el primero que pase el filtro
+                    if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) !== false ) {
+                        return $ip;
+                    }
+                }
+            }
+        }
+    
+        return '?'; // Retornamos '?' si no hay ninguna IP o no pase el filtro
+    } 
+
+    protected function obtenerUbicacion($ip){
+        $res = json_decode(file_get_contents("http://www.geoplugin.net/json.gp?ip=".$ip), true);
+        $pais = $res['geoplugin_countryName'];
+        $ciudad = $res['geoplugin_regionName'];
+        $ubicacionName = $ciudad. '-' . $pais; 
+        return $ubicacionName;
+    }
+
     public function votar(Request $request)
     {
+        $estadoVoto = $this->comprobarEstado();
+        if(!$estadoVoto){
+            return response()->json(['status' => 'error', 'message' => 'Se terminó el tiempo para votar'], 400);
+        } 
+
+        $ipClient = $this->getUserIpAddress();
+        $ubicacionName = $this->obtenerUbicacion($ipClient);
         try {
             $info = $request->info;
             $cantidadLetras = 0;
@@ -98,6 +150,8 @@ class VotacionController extends Controller
                 $voto->socio_id = $request->socio_id;
                 $voto->candidato_id = 1;
                 $voto->temporada_id = $request->temporada_id;
+                $voto->ip_client = $ipClient;
+                $voto->ubicacion = $ubicacionName;
                 $voto->save();
 
                 return response()->json(['status' => 'success', 'message' => 'Se registró su voto'], 200);
@@ -108,6 +162,8 @@ class VotacionController extends Controller
                 $voto->socio_id = $request->socio_id;
                 $voto->candidato_id = 2;
                 $voto->temporada_id = $request->temporada_id;
+                $voto->ip_client = $ipClient;
+                $voto->ubicacion = $ubicacionName;
                 $voto->save();
 
                 return response()->json(['status' => 'success', 'message' => 'Se registró su voto'], 200);
@@ -119,6 +175,8 @@ class VotacionController extends Controller
             $voto->socio_id = $request->socio_id;
             $voto->candidato_id = $buscarNumero[0]['id'];
             $voto->temporada_id = $request->temporada_id;
+            $voto->ip_client = $ipClient;
+            $voto->ubicacion = $ubicacionName;
             $voto->save();
 
             return response()->json(['status' => 'success', 'message' => 'Se registró su voto'], 200);
