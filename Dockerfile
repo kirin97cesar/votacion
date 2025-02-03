@@ -28,8 +28,7 @@ RUN useradd -G www-data,root -u $uid -d /home/$user $user && \
 # Establecer directorio de trabajo
 WORKDIR /var/www/html
 
-# Copiar el archivo de configuración de Nginx y tu código
-COPY nginx/default.conf /etc/nginx/sites-available/default
+# Copiar el archivo de configuración
 COPY .env .env
 RUN chmod 644 .env
 
