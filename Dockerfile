@@ -39,4 +39,4 @@ EXPOSE 80
 USER $user
 
 # Iniciar Nginx y PHP-FPM
-CMD service nginx start && php-fpm
+CMD php artisan migrate --force && php-fpm
