@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     zip \
-    unzip && \
+    unzip \
+    nginx && \
     docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -25,17 +26,18 @@ RUN useradd -G www-data,root -u $uid -d /home/$user $user && \
     chown -R $user:$user /home/$user
 
 # Establecer directorio de trabajo
-WORKDIR /var/www
+WORKDIR /var/www/html
 
-# Copiar el archivo de variables de entorno
+# Copiar el archivo de configuración de Nginx y tu código
+COPY nginx/default.conf /etc/nginx/sites-available/default
 COPY .env .env
 RUN chmod 644 .env
 
-# Exponer el puerto del contenedor
-EXPOSE 9000
+# Exponer el puerto 80 para HTTP
+EXPOSE 80
 
 # Usar usuario no root
 USER $user
 
-# Comando de inicio
-CMD ["php-fpm"]
+# Iniciar Nginx y PHP-FPM
+CMD service nginx start && php-fpm
