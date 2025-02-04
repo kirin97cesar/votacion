@@ -155,7 +155,7 @@ class DashboardController extends Controller
             foreach ($totalCandidatos as $candidato) {
                 $i++;
                 $total_votos = $this->cantidadVotosPorCandidato($id, $candidato['id']);
-                Log::info('Datos del objeto', json_decode(json_encode($miObjeto), true));
+                Log::info('Datos del objeto', json_decode(json_encode($total_votos), true));
                 $total_votos = $total_votos ?  $total_votos : [];
                 array_push($arrayPuntajesCandidato, [
                     'candidato' => $candidato,
