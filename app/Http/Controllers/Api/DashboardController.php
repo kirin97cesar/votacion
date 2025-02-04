@@ -156,8 +156,8 @@ class DashboardController extends Controller
                 $total_votos = $this->cantidadVotosPorCandidato($id, $candidato['id']);
                 array_push($arrayPuntajesCandidato, [
                     'candidato' => $candidato,
-                    'total_votos' => count($total_votos) == 0 ? 0 : $total_votos[0]['total'],
-                    'porcentaje' => round((100 * (count($total_votos) == 0 ? 0 : $total_votos[0]['total']) / ((count($cantidadVotos) == 0) ? 0 : $cantidadVotos[0]['total'])),2),
+                    'total_votos' => count($total_votos) > 0 ? $total_votos[0]['total'] : 0,
+                    'porcentaje' => round((100 * (count($total_votos) > 0 ? $total_votos[0]['total'] : 0) / ((count($cantidadVotos) > 0) ? $cantidadVotos[0]['total'] : 0)),2),
                     'colores' => $colores[$i]
                 ]);
             }
@@ -171,8 +171,8 @@ class DashboardController extends Controller
         
         return [
             'cantidadSocios' => $cantidadSocios,
-            'cantidadVotos' => (count($cantidadVotos) == 0) ? 0 : $cantidadVotos[0]['total'],
-            'cantidadNoVotaron' => $cantidadSocios - ((count($cantidadVotos) == 0) ? 0 : $cantidadVotos[0]['total']),
+            'cantidadVotos' => (count($cantidadVotos) > 0) ? $cantidadVotos[0]['total'] : 0,
+            'cantidadNoVotaron' => $cantidadSocios - ((count($cantidadVotos) > 0) ? $cantidadVotos[0]['total'] : 0),
             'ultimaFechaVotacion' => $temporadaUltima,
             'votos_candidato' => $mostrarCandidatos,
             'socios_Votaron' => $quienesVotaron,
@@ -217,7 +217,7 @@ class DashboardController extends Controller
         $pdf = app('dompdf.wrapper');
         $html  = '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <h1>Resultados de votación</h1>';
-        $html .= '<img src="https://api.cooperativasanviator.org.pe/storage/votacion/votacion_resultados'.$ldate.'.png" width="700" height="900"/>';
+        $html .= '<img src="https://votacion.onrender.com/storage/votacion/votacion_resultados'.$ldate.'.png" width="700" height="900"/>';
         $html .= '
         <ul style="list-style: none; font-size: small; padding-top: 50px; border: 1px solid;">
             <li>_____________________________________</li>
