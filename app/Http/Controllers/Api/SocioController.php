@@ -23,9 +23,12 @@ class SocioController extends Controller
 
             $buscarSocio = Socio::where('codigo', $request->codigo)->get();
             if (count($buscarSocio) > 0) return response()->json(['status' => 'error', 'message' => 'Ya se registró este código'], 500);
+            $buscarPorDni = Socio::where('dni', $request->dni)->get();
+            if (count($buscarPorDni) > 0) return response()->json(['status' => 'error', 'message' => 'Ya se registró este dni'], 500);
             $socio = new Socio();
             $socio->nombres = $request->nombres;
             $socio->codigo = $request->codigo;
+            $socio->dni = $request->dni;
             $socio->save();
             return response()->json(['status' => 'success', 'message' => 'Se registró este socio'], 200);
         } catch (Exception $error) {
@@ -62,6 +65,7 @@ class SocioController extends Controller
             $socio = Socio::find($id);
             $socio->nombres = $request->nombres;
             $socio->codigo = $request->codigo;
+            $socio->dni = $request->dni;
             $socio->save();
             return response()->json(['status' => 'success', 'message' => 'Se actualizó el socio'], 200);
         } catch (Exception $error) {
