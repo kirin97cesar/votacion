@@ -15,5 +15,5 @@ jobs:
     steps:
       - name: Send request to Render service
         run: |
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://tu-app.onrender.com)
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://votacion.onrender.com)
           echo "Response Code: $RESPONSE"
