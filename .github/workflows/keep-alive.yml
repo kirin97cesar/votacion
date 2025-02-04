@@ -1,0 +1,19 @@
+name: Keep Render Alive
+
+on:
+  schedule:
+    - cron: "*/1 * * * *"  # Se ejecuta cada minuto
+  workflow_dispatch:  # Permite ejecutarlo manualmente
+
+permissions:
+  contents: read  # Necesario para repos privados
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send request to Render service
+        run: |
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://tu-app.onrender.com)
+          echo "Response Code: $RESPONSE"
