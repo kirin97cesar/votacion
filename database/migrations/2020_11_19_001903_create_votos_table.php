@@ -21,6 +21,8 @@ class CreateVotosTable extends Migration
             $table->foreign('candidato_id')->references('id')->on('candidatos');
             $table->unsignedBigInteger('temporada_id');
             $table->foreign('temporada_id')->references('id')->on('temporadas');
+            $table->string('ip_client');
+            $table->string('ubicacion');
             $table->timestamps();
         });
     }
