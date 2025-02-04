@@ -12,6 +12,7 @@ use App\Exports\SociosVotacionExport;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Writer\Pdf\Dompdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -154,6 +155,8 @@ class DashboardController extends Controller
             foreach ($totalCandidatos as $candidato) {
                 $i++;
                 $total_votos = $this->cantidadVotosPorCandidato($id, $candidato['id']);
+                Log::info("que esta llegando", $total_votos);
+                $total_votos = $total_votos ?  $total_votos : [];
                 array_push($arrayPuntajesCandidato, [
                     'candidato' => $candidato,
                     'total_votos' => count($total_votos) > 0 ? $total_votos[0]['total'] : 0,
