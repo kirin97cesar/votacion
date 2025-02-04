@@ -71,7 +71,7 @@ class DashboardController extends Controller
                 array_push($arrayPuntajesCandidato, [
                     'candidato' => $candidato,
                     'total_votos' => count($total_votos) == 0 ? 0 : $total_votos[0]['total'],
-                    'porcentaje' => round((100 * (count($total_votos) == 0 ? 0 : $total_votos[0]['total']) / ((count($cantidadVotos) == 0) ? 0 : $cantidadVotos[0]['total'])),2),
+                    'porcentaje' => round((100 * (count($total_votos) == 0 ? 0 : $total_votos[0]['total']) / ((count($cantidadVotos) > 0) ? $cantidadVotos[0]['total'] : 1)),2),
                     'colores' => $colores[random_int(0,(count($colores) - 1))]
                 ]);
             }
