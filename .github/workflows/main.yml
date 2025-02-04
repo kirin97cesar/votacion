@@ -9,4 +9,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send request to Render service
-        run: curl -s -o /dev/null -w "%{http_code}" https://tu-app.onrender.com
+        run: curl -s -o /dev/null -w "%{http_code}" https://votacion.onrender.com
