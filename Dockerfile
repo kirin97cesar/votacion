@@ -40,6 +40,8 @@ COPY nginx/default.conf /etc/nginx/nginx.conf
 RUN chmod -R 775 storage bootstrap/cache && \
     chown -R www-data:www-data storage bootstrap/cache
 
+RUN chmod 600 storage/certs/ca.pem
+
 # Instalar dependencias de Laravel
 RUN composer install --no-dev --optimize-autoloader
 
