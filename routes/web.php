@@ -12,3 +12,6 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+Route::get('/public', function () {
+    return view('welcome'); // Puedes cambiar 'welcome' por el nombre de la vista que desees mostrar.
+});
