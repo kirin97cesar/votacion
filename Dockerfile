@@ -55,4 +55,4 @@ USER root
 
 # Ejecutar migraciones y seeders antes de iniciar Nginx y PHP-FPM
 # CMD php artisan migrate --force && php artisan db:seed --force && service nginx start && php-fpm
-CMD service nginx start && php-fpm
+CMD php artisan key:generate && service nginx start && php-fpm
