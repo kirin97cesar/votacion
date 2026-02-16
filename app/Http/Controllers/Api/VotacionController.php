@@ -95,12 +95,25 @@ class VotacionController extends Controller
     } 
 
     protected function obtenerUbicacion($ip){
-        $res = json_decode(file_get_contents("http://www.geoplugin.net/json.gp?ip=".$ip), true);
-        $pais = $res['geoplugin_countryName'];
-        $ciudad = $res['geoplugin_regionName'];
-        $ubicacionName = $ciudad. '-' . $pais; 
-        return $ubicacionName;
+        $url = "http://ip-api.com/json/{$ip}";
+        
+        $response = @file_get_contents($url);
+        if($response === false){
+            return "Ubicación no disponible";
+        }
+
+        $data = json_decode($response, true);
+
+        if($data['status'] !== 'success'){
+            return "Ubicación no disponible";
+        }
+
+        $pais = $data['country'] ?? '';
+        $ciudad = $data['regionName'] ?? '';
+
+        return trim($ciudad . '-' . $pais, '-');
     }
+
 
     public function votar(Request $request)
     {
