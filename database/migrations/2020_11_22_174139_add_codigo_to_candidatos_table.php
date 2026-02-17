@@ -14,7 +14,7 @@ class AddCodigoToCandidatosTable extends Migration
     public function up()
     {
         Schema::table('candidatos', function (Blueprint $table) {
-            $table->string('codigo');
+            $table->string('codigo')->nullable();
         });
     }
 
