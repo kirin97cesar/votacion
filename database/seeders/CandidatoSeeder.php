@@ -19,12 +19,16 @@ class CandidatoSeeder extends Seeder
                 'id' => 1,
                 'nombres' => 'EN BLANCO',
                 'dni' => 00000000,
+                'numero' => 0,
+                'codigo' => '00000000',
                 'temporada_id' => 1
             ],
             [
                 'id' => 2,
                 'nombres' => 'NULO',
                 'dni' => 00000000,
+                'numero' => 0,
+                'codigo' => '00000000',
                 'temporada_id' => 1
             ]
         ]);
