@@ -17,171 +17,92 @@ use Illuminate\Support\Facades\Log;
 class DashboardController extends Controller
 {
     public function index($id)
-    {   
-        if($id == 0)
-        {
-            $totalSociosF = Socio::all();
-            $cantidadSocios = count($totalSociosF);
+    {
+        // 1️⃣ Obtener temporada
+        if ($id == 0) {
+            $temporada = Temporada::orderByDesc('id')->first();
+        } else {
+            $temporada = Temporada::where('id', $id)->firstOrFail();
+        }
 
-            $temporadaUltima = Temporada::orderBy('id', 'DESC')
-                ->take(1)
-                ->get();
+        $id = $temporada->id;
 
-            $id= $temporadaUltima[0]['id'];
-                
-            $cantidadVotos = Voto::where('temporada_id', $temporadaUltima[0]['id'])
-                ->groupBy('temporada_id')
-                ->select(Voto::raw('count(votos.id) AS total'), 'temporadas.*')
-                ->join('temporadas', 'temporadas.id', 'votos.temporada_id')
-                ->orderBy('temporadas.fecha_inicio', 'DESC')
-                ->take(1)
-                ->get();
+        // 2️⃣ Total socios
+        $cantidadSocios = Socio::count();
 
-            $quienesVotaron = Voto::where('temporada_id', $temporadaUltima[0]['id'])
-                            ->select('socios.*')
-                            ->join('socios','socios.id','votos.socio_id')
-                            ->get();
+        // 3️⃣ Total votos de la temporada
+        $cantidadVotos = Voto::where('temporada_id', $id)->count();
 
-            $obtenerId = [];
-            foreach($quienesVotaron as $voto)
-            {
-                array_push($obtenerId, $voto['id']);
-            }
+        // 4️⃣ Votos por candidato (UNA sola query)
+        $votosPorCandidato = Voto::selectRaw('candidato_id, COUNT(*) as total')
+            ->where('temporada_id', $id)
+            ->groupBy('candidato_id')
+            ->pluck('total', 'candidato_id');
 
-            $quienesNoVotaron = Socio::select('socios.*')
-                            ->whereNotIn('socios.id',$obtenerId)
-                            ->get();
-
-            $totalCandidatos = Candidato::select(
+        // 5️⃣ Obtener candidatos + datos de temporada
+        $totalCandidatos = Candidato::select(
                 'candidatos.*',
                 'temporadas.tema',
                 'temporadas.fecha_inicio',
                 'temporadas.fecha_fin'
             )
-                ->where('candidatos.temporada_id', $temporadaUltima[0]['id'])
-                ->join('temporadas', 'temporadas.id', 'candidatos.temporada_id')
-                ->orderBy('temporadas.fecha_inicio', 'DESC')
-                ->get();
-
-            $arrayPuntajesCandidato = [];
-            $colores = ['red','green','blue','orange','yellow','purple','pink','gray'];
-            $total_votos = 0;
-            foreach ($totalCandidatos as $candidato) {
-                $total_votos = $this->cantidadVotosPorCandidato($temporadaUltima[0]['id'], $candidato['id']);
-                array_push($arrayPuntajesCandidato, [
-                    'candidato' => $candidato,
-                    'total_votos' => count($total_votos) == 0 ? 0 : $total_votos[0]['total'],
-                    'porcentaje' => round((100 * (count($total_votos) == 0 ? 0 : $total_votos[0]['total']) / ((count($cantidadVotos) > 0) ? $cantidadVotos[0]['total'] : 1)),2),
-                    'colores' => $colores[random_int(0,(count($colores) - 1))]
-                ]);
-            }
-            $mostrarCandidatos = [];
-            $votoC = collect($arrayPuntajesCandidato)->SortByDesc("porcentaje");
-            foreach($votoC as $v)
-            {
-                array_push($mostrarCandidatos, $v);
-            }
-            $votosNulos = Voto::where('temporada_id', $id)
-            ->where('votos.candidato_id',2)
-            ->join('temporadas', 'temporadas.id', 'votos.temporada_id')
-            ->orderBy('temporadas.fecha_inicio', 'DESC')
+            ->join('temporadas', 'temporadas.id', '=', 'candidatos.temporada_id')
+            ->where('candidatos.temporada_id', $id)
+            ->orderByDesc('temporadas.fecha_inicio')
             ->get();
 
-            $votosBlanco = Voto::where('temporada_id', $id)
-            ->where('votos.candidato_id',1)
-            ->join('temporadas', 'temporadas.id', 'votos.temporada_id')
-            ->orderBy('temporadas.fecha_inicio', 'DESC')
-            ->get();
+        // 6️⃣ Armar array de resultados
+        $colores = ['red','green','blue','orange','yellow','indigo','purple','pink','gray'];
+
+        $arrayPuntajesCandidato = [];
+
+        foreach ($totalCandidatos as $index => $candidato) {
+
+            $total_votos = $votosPorCandidato[$candidato->id] ?? 0;
+
+            $arrayPuntajesCandidato[] = [
+                'candidato' => $candidato,
+                'total_votos' => $total_votos,
+                'porcentaje' => $cantidadVotos > 0
+                    ? round((100 * $total_votos / $cantidadVotos), 2)
+                    : 0,
+                'colores' => $colores[$index % count($colores)]
+            ];
         }
-        else
-        {
-            $totalSociosF = Socio::all();
-            $cantidadSocios = count($totalSociosF);
 
-            $temporadaUltima = Temporada::where('id', $id)
-                ->take(1)
-                ->get();
+        $mostrarCandidatos = collect($arrayPuntajesCandidato)
+            ->sortByDesc('porcentaje')
+            ->values();
 
-            $cantidadVotos = Voto::where('temporada_id', $id)
-                ->groupBy('temporada_id')
-                ->select(Voto::raw('count(votos.id) AS total'), 'temporadas.*')
-                ->join('temporadas', 'temporadas.id', 'votos.temporada_id')
-                ->orderBy('temporadas.fecha_inicio', 'DESC')
-                ->take(1)
-                ->get();
+        // 7️⃣ IDs de socios que votaron
+        $idsVotaron = Voto::where('temporada_id', $id)
+            ->pluck('socio_id');
 
-            $votosNulos = Voto::where('temporada_id', $id)
-            ->where('votos.candidato_id',2)
-            ->join('temporadas', 'temporadas.id', 'votos.temporada_id')
-            ->orderBy('temporadas.fecha_inicio', 'DESC')
-            ->get();
+        // 8️⃣ Socios que votaron
+        $sociosVotaron = Socio::whereIn('id', $idsVotaron)->get();
 
-            $votosBlanco = Voto::where('temporada_id', $id)
-            ->where('votos.candidato_id',1)
-            ->join('temporadas', 'temporadas.id', 'votos.temporada_id')
-            ->orderBy('temporadas.fecha_inicio', 'DESC')
-            ->get();
+        // 9️⃣ Socios que NO votaron
+        $sociosNoVotaron = Socio::whereNotIn('id', $idsVotaron)->get();
 
-            $quienesVotaron = Voto::where('temporada_id', $id)
-                            ->select('socios.*')
-                            ->join('socios','socios.id','votos.socio_id')
-                            ->get();
-            
-            $obtenerId = [];
-            foreach($quienesVotaron as $voto)
-            {
-                array_push($obtenerId, $voto['id']);
-            }
+        // 🔟 Votos especiales
+        $votosNulos = Voto::where('temporada_id', $id)
+            ->where('candidato_id', 2)
+            ->count();
 
-            $quienesNoVotaron = Socio::select('socios.*')
-                            ->whereNotIn('socios.id',$obtenerId)
-                            ->get();
+        $votosBlanco = Voto::where('temporada_id', $id)
+            ->where('candidato_id', 1)
+            ->count();
 
-            $totalCandidatos = Candidato::select(
-                'candidatos.*',
-                'temporadas.tema',
-                'temporadas.fecha_inicio',
-                'temporadas.fecha_fin'
-            )
-                ->where('candidatos.temporada_id', $id)
-                ->join('temporadas', 'temporadas.id', 'candidatos.temporada_id')
-                ->orderBy('temporadas.fecha_inicio', 'DESC')
-                ->get();
-
-            $arrayPuntajesCandidato = [];
-            $colores = ['red','green','blue','orange','yellow','indigo','purple','pink','gray','red','green','blue','orange','yellow','indigo','purple','pink','gray','red','green','blue','orange','yellow','indigo','purple','pink','gray','red','green','blue','orange','yellow','indigo','purple','pink','gray'];
-            $total_votos = 0;
-            $i = 0;
-            foreach ($totalCandidatos as $candidato) {
-                $i++;
-                $total_votos = $this->cantidadVotosPorCandidato($id, $candidato['id']);
-                Log::info('Datos del objeto', json_decode(json_encode($total_votos), true));
-                $total_votos = $total_votos ?  $total_votos : [];
-                array_push($arrayPuntajesCandidato, [
-                    'candidato' => $candidato,
-                    'total_votos' => count($total_votos) > 0 ? $total_votos[0]['total'] : 0,
-                    'porcentaje' => round((100 * (count($total_votos) > 0 ? $total_votos[0]['total'] : 0) / ((count($cantidadVotos) > 0) ? $cantidadVotos[0]['total'] : 1)),2),
-                    'colores' => $colores[$i]
-                ]);
-            }
-            $mostrarCandidatos = [];
-            $votoC = collect($arrayPuntajesCandidato)->SortByDesc("porcentaje");
-            foreach($votoC as $v)
-            {
-                array_push($mostrarCandidatos, $v);
-            }
-        }
-        
         return [
             'cantidadSocios' => $cantidadSocios,
-            'cantidadVotos' => (count($cantidadVotos) > 0) ? $cantidadVotos[0]['total'] : 0,
-            'cantidadNoVotaron' => $cantidadSocios - ((count($cantidadVotos) > 0) ? $cantidadVotos[0]['total'] : 0),
-            'ultimaFechaVotacion' => $temporadaUltima,
+            'cantidadVotos' => $cantidadVotos,
+            'cantidadNoVotaron' => $cantidadSocios - $cantidadVotos,
+            'ultimaFechaVotacion' => $temporada,
             'votos_candidato' => $mostrarCandidatos,
-            'socios_Votaron' => $quienesVotaron,
-            'socios_No_Votaron' => $quienesNoVotaron,
-            'votos_nulos' => count($votosNulos),
-            'votos_blanco' => count($votosBlanco),
+            'socios_Votaron' => $sociosVotaron,
+            'socios_No_Votaron' => $sociosNoVotaron,
+            'votos_nulos' => $votosNulos,
+            'votos_blanco' => $votosBlanco,
         ];
     }
 
