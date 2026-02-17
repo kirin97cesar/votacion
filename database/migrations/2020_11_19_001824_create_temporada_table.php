@@ -28,6 +28,6 @@ class CreateTemporadaTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('temporada');
+        Schema::dropIfExists('temporadas');
     }
 }

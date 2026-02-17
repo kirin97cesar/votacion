@@ -17,8 +17,8 @@ class TemporadaSeeder extends Seeder
     $temporada::create([
         'id' => 1,
         'tema' => 'INVALIDO',
-        'fecha_inicio' => '0000-00-00 00:00:00',
-        'fecha_fin' => '0000-00-00 00:00:00'
+        'fecha_inicio' => '1800-01-01 00:00:00',
+        'fecha_fin' => '1800-01-01 00:00:00'
     ]);
     }
 }
