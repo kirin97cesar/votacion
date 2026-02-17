@@ -154,9 +154,14 @@ class VotacionController extends Controller
 
             if (count($buscarSiVoto) > 0) return response()->json(['status' => 'error', 'message' => 'Ya votó'], 400);
 
-            $buscarNumero = Candidato::where('numero', $request->numero)
+            if($request->numero == '')
+            {
+                $buscarNumero = [];
+            } else {
+                $buscarNumero = Candidato::where('numero', $request->numero)
                 ->where('temporada_id', $temporadaActual[0]['id'])
                 ->get();
+            }
 
             if (count($buscarNumero) == 0 && ($request->numero == '' || $request->numero == 'null' || $request->numero == 'undefined' || $request->numero == null)) {
                 $voto = new Voto();

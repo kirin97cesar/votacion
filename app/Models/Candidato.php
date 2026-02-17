@@ -9,5 +9,5 @@ class Candidato extends Model
 {
     use HasFactory;
     protected $table = 'candidatos';
-    protected $fillable = ['nombre','dni','temporada_id','numero'];
+    protected $fillable = ['nombre','dni','temporada_id','numero', 'id'];
 }
